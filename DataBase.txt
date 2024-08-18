@@ -1,0 +1,68 @@
+-- Create ProductionCompany table
+CREATE TABLE ProductionCompany (
+    CompanyID SERIAL PRIMARY KEY,
+    CompanyName VARCHAR(255),
+    Address VARCHAR(255),
+    ZIPCode VARCHAR(10),
+    City VARCHAR(255),
+    Nation VARCHAR(255),
+    OrganizationType VARCHAR(50),
+    NumEmployees INT,
+    NetValue DECIMAL(15, 2),
+    RegistrationDate DATE,
+    RegistrationFee DECIMAL(10, 2)
+);
+
+-- Create Shareholder table
+CREATE TABLE Shareholder (
+    ShareholderID SERIAL PRIMARY KEY,
+    CompanyID INT REFERENCES ProductionCompany(CompanyID),
+    PlaceOfBirth VARCHAR(255),
+    MothersMaidenName VARCHAR(255),
+    FathersFirstName VARCHAR(255),
+    PhoneNumber VARCHAR(15),
+    NationalInsuranceNumber VARCHAR(20),
+    PassportNumber VARCHAR(20)
+);
+
+-- Create Employee table
+CREATE TABLE Employee (
+    EmployeeID SERIAL PRIMARY KEY,
+    CompanyID INT REFERENCES ProductionCompany(CompanyID),
+    EmployeeType VARCHAR(50),
+    FirstName VARCHAR(255),
+    MiddleName VARCHAR(255),
+    LastName VARCHAR(255),
+    DateOfBirth DATE,
+    CommencementDate DATE,
+    Email VARCHAR(255),
+    PhoneNumber VARCHAR(15),
+    Description VARCHAR(255),
+    HourlyWage DECIMAL(10, 2),
+    BonusStructure VARCHAR(255)
+);
+
+-- Create Film table
+CREATE TABLE Film (
+    FilmID SERIAL PRIMARY KEY,
+    CompanyID INT REFERENCES ProductionCompany(CompanyID),
+    MovieCode VARCHAR(50),
+    Title VARCHAR(255),
+    ReleaseYear INT,
+    FirstReleaseDate DATE,
+    Protagonist VARCHAR(255),
+    RoleDescription VARCHAR(255)
+);
+
+-- Create FinancialSupport table
+CREATE TABLE FinancialSupport (
+    SupportID SERIAL PRIMARY KEY,
+    CompanyID INT REFERENCES ProductionCompany(CompanyID),
+    GrantTitle VARCHAR(255),
+    FundingOrganization VARCHAR(255),
+    MaxMonetaryValue DECIMAL(15, 2),
+    ProposalSubmissionDeadline DATE,
+    ApplicationDate DATE,
+    DesiredAmount DECIMAL(10, 2),
+    Outcome VARCHAR(20)
+);

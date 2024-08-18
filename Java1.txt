@@ -1,0 +1,182 @@
+package java_projec;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.sql.*;
+
+public class DatabaseApp extends JFrame {
+    private JComboBox<String> userComboBox;
+    private JComboBox<String> schemaComboBox;
+    private JTextField usernameField;
+    private JPasswordField passwordField;
+    private JTextArea queryTextArea;
+    private JTextArea resultTextArea;
+
+    private Connection connection;
+
+    public DatabaseApp() {
+        // Initialize GUI components
+
+        userComboBox = new JComboBox<>(new String[]{"root", "client1", "client2"});
+        schemaComboBox = new JComboBox<>(new String[]{"project3", "bikedb", "newdb", "modeldb"});
+        usernameField = new JTextField();
+        passwordField = new JPasswordField();
+        queryTextArea = new JTextArea(10, 30);
+        resultTextArea = new JTextArea(10, 30);
+        JButton connectButton = new JButton("Connect to Database");
+        JButton executeButton = new JButton("Execute");
+
+        connectButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                connectToDatabase();
+            }
+        });
+
+        executeButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                executeQuery();
+            }
+        });
+
+        JPanel panel = new JPanel(new GridLayout(6, 2));
+        panel.add(new JLabel("User:"));
+        panel.add(userComboBox);
+        panel.add(new JLabel("Schema:"));
+        panel.add(schemaComboBox);
+        panel.add(new JLabel("Username:"));
+        panel.add(usernameField);
+        panel.add(new JLabel("Password:"));
+        panel.add(passwordField);
+        panel.add(connectButton);
+        panel.add(executeButton);
+
+        add(panel, BorderLayout.NORTH);
+        add(new JScrollPane(queryTextArea), BorderLayout.CENTER);
+        add(new JScrollPane(resultTextArea), BorderLayout.SOUTH);
+
+        setTitle("Database Application");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        pack();
+        setLocationRelativeTo(null);
+        setVisible(true);
+    }
+
+    private void connectToDatabase() {
+        try {
+            String selectedSchema = (String) schemaComboBox.getSelectedItem();
+            String url = "jdbc:mysql://localhost:3306/login1" + selectedSchema;
+            String username = usernameField.getText();
+            String password = new String(passwordField.getPassword());
+
+            connection = DriverManager.getConnection(url, username, password);
+
+            // Retrieve user activity data
+            String selectUserActivity = "SELECT * FROM user_activity WHERE username = ?";
+            PreparedStatement selectUserActivityStmt = connection.prepareStatement(selectUserActivity);
+            selectUserActivityStmt.setString(1, (String) userComboBox.getSelectedItem());
+            ResultSet resultSet = selectUserActivityStmt.executeQuery();
+
+            if (resultSet.next()) {
+                int loginCount = resultSet.getInt("login_count");
+                int queryCount = resultSet.getInt("query_count");
+                int updateCount = resultSet.getInt("update_count");
+
+                JOptionPane.showMessageDialog(this,
+                        "Login Count: " + loginCount +
+                                "\nQuery Count: " + queryCount +
+                                "\nUpdate Count: " + updateCount,
+                        "User Activity", JOptionPane.INFORMATION_MESSAGE);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error connecting to database", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void executeQuery() {
+        if (connection == null) {
+            JOptionPane.showMessageDialog(this, "Please connect to the database first", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        String selectedUser = (String) userComboBox.getSelectedItem();
+        String selectedSchema = (String) schemaComboBox.getSelectedItem();
+        String query = queryTextArea.getText();
+
+        try {
+            Statement statement = connection.createStatement();
+
+            if (selectedUser.equals("root")) {
+                // Execute the query
+            } else if (selectedUser.equals("client1")) {
+                if (query.contains("UPDATE") || query.contains("INSERT") || query.contains("DELETE")) {
+                    JOptionPane.showMessageDialog(this, "You do not have permission to perform this action", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                incrementQueryCount(selectedUser);
+                // Execute the query with schema name
+                executeQueryWithSchema(selectedSchema, query);
+            } else if (selectedUser.equals("client2")) {
+                if (query.contains("INSERT") || query.contains("DELETE")) {
+                    JOptionPane.showMessageDialog(this, "You do not have permission to perform this action", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                incrementQueryCount(selectedUser);
+                // Execute the query with schema name
+                executeQueryWithSchema(selectedSchema, query);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error executing query", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void incrementQueryCount(String username) {
+        try {
+            String updateQueryCount = "UPDATE user_activity SET query_count = query_count + 1 WHERE username = ?";
+            PreparedStatement updateQueryCountStmt = connection.prepareStatement(updateQueryCount);
+            updateQueryCountStmt.setString(1, username);
+            updateQueryCountStmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void executeQueryWithSchema(String schema, String query) {
+        try {
+            Statement statement = connection.createStatement();
+            statement.execute("USE " + schema); // Switch to the specified schema
+            ResultSet resultSet = statement.executeQuery(query);
+
+            // Process and display the result
+            // Clear the resultTextArea before displaying new results
+            resultTextArea.setText("");
+
+            ResultSetMetaData metaData = resultSet.getMetaData();
+            int columnCount = metaData.getColumnCount();
+
+            while (resultSet.next()) {
+                for (int i = 1; i <= columnCount; i++) {
+                    String value = resultSet.getString(i);
+                    resultTextArea.append(value + "\t");
+                }
+                resultTextArea.append("\n");
+            }
+
+            // Optionally, you can switch back to the default schema after executing the query
+            statement.execute("USE your_default_schema");
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error executing query", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(DatabaseApp::new);
+    }
+}

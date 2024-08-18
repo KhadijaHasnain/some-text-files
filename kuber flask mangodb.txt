@@ -1,0 +1,165 @@
+Certainly! The steps for setting up the project on Windows are quite similar, but there are some Windows-specific commands and considerations. Let's go through the steps:
+
+### Task-1: Construct MongoDB
+
+1. **Install MongoDB:**
+   - Download and install MongoDB from the official website: [MongoDB Download Center](https://www.mongodb.com/try/download/community)
+   - Follow the installation instructions for Windows.
+
+2. **Create a MongoDB Database and Collection:**
+   - Open a MongoDB shell or use a MongoDB GUI tool.
+   - Create a database named `bookstore` and a collection named `books`.
+
+   ```javascript
+   use bookstore
+   ```
+
+   - Insert the provided JSON data into the `books` collection.
+
+   ```javascript
+   db.books.insertMany([
+      // ... (paste the provided JSON array here)
+   ])
+   ```
+
+### Task-2: Develop Python Application
+
+1. **Install Flask and PyMongo:**
+   - Open the Command Prompt or PowerShell and run:
+
+   ```bash
+   pip install Flask pymongo
+   ```
+
+2. **Write Flask App:**
+   - Create a new file named `app.py` and write a Flask app that connects to the MongoDB database and performs CRUD operations.
+
+   ```python
+   from flask import Flask, jsonify, request
+   from pymongo import MongoClient
+
+   app = Flask(__name__)
+   client = MongoClient("mongodb://localhost:27017/")
+   db = client["bookstore"]
+   books_collection = db["books"]
+
+   @app.route("/books", methods=["GET"])
+   def get_books():
+       books = list(books_collection.find({}, {"_id": 0}))
+       return jsonify({"books": books})
+
+   # Implement other CRUD routes (create, update, delete)
+
+   if __name__ == "__main__":
+       app.run(debug=True)
+   ```
+
+### Task-3: Test Python Application Locally
+
+1. **Run Flask App Locally:**
+   - Open the Command Prompt or PowerShell, navigate to your project directory, and run your Flask app:
+
+   ```bash
+   python app.py
+   ```
+
+   - Test the endpoints using a tool like `curl`, `httpie`, or a browser.
+
+### Task-4: Dockerize the Python Application
+
+1. **Create a `Dockerfile`:**
+   - Create a `Dockerfile` in your project directory:
+
+   ```Dockerfile
+   FROM python:3.8
+
+   WORKDIR /app
+
+   COPY requirements.txt .
+
+   RUN pip install --no-cache-dir -r requirements.txt
+
+   COPY . .
+
+   CMD ["python", "app.py"]
+   ```
+
+2. **Build and Run Docker Container:**
+   - Open the Command Prompt or PowerShell.
+   - Build the Docker image:
+
+   ```bash
+   docker build -t your-docker-username/bookstore-app:latest .
+   ```
+
+   - Run the Docker container:
+
+   ```bash
+   docker run -p 5000:5000 your-docker-username/bookstore-app:latest
+   ```
+
+### Task-5: Kubernetes Deployment
+
+1. **Install Minikube:**
+   - Minikube is a tool to run a Kubernetes cluster locally. Download and install it from [Minikube Releases](https://github.com/kubernetes/minikube/releases).
+
+2. **Start Minikube:**
+   - Open the Command Prompt or PowerShell and run:
+
+   ```bash
+   minikube start
+   ```
+
+3. **Apply Deployment and Service Files:**
+   - Create `deployment.yaml` and `service.yaml` files for your Python application.
+
+   ```yaml
+   # deployment.yaml
+   apiVersion: apps/v1
+   kind: Deployment
+   metadata:
+     name: bookstore-app
+   spec:
+     replicas: 1
+     selector:
+       matchLabels:
+         app: bookstore-app
+     template:
+       metadata:
+         labels:
+           app: bookstore-app
+       spec:
+         containers:
+         - name: bookstore-app
+           image: your-docker-username/bookstore-app:latest
+           ports:
+           - containerPort: 5000
+   ```
+
+   ```yaml
+   # service.yaml
+   apiVersion: v1
+   kind: Service
+   metadata:
+     name: bookstore-app
+   spec:
+     selector:
+       app: bookstore-app
+     ports:
+     - protocol: TCP
+       port: 80
+       targetPort: 5000
+     type: LoadBalancer
+   ```
+
+   - Apply the Kubernetes deployment and service files:
+
+   ```bash
+   kubectl apply -f deployment.yaml -f service.yaml
+   ```
+
+Now, your Flask application is deployed on Minikube, and you can access it through the Minikube IP.
+
+Remember to replace placeholders like `your-docker-username` with your actual Docker Hub username.
+
+If you encounter any issues specific to Windows, feel free to ask for further assistance.

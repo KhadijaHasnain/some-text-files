@@ -1,0 +1,72 @@
+SELECT foods.tem_name,foods.item_unit,
+company.company_name, company.company_city
+FROM foods ,company
+WHERE  foods.company_id =company.company_id
+AND company.company_city='London';
+
+
+Retrieve Production Companies' Information:
+Get a list of all production companies in the European region:
+SELECT * FROM production_company_table WHERE nation = 'Europe';
+
+
+Retrieve specific details for a given production company:
+SELECT name, address, zip_code, city, nation, organization_type, employee_count, net_value
+FROM production_company_table
+WHERE company_id = 'your_company_id';
+
+
+Retrieve Shareholder Information:
+Obtain a list of shareholders for a particular production company:
+SELECT * FROM stakeholder_table WHERE company_id = 'your_company_id';
+
+Retrieve details of a specific shareholder:
+SELECT place_of_birth, mother_name, father_name, phone_number, insurance_number, passport_number
+FROM stakeholder_table
+WHERE company_id = 'your_company_id' AND stakeholder_id = 'your_stakeholder_id';
+
+Retrieve Employee Information:
+Get a list of all employees working for a specific production company:
+SELECT * FROM employee_table WHERE company_id = 'your_company_id';
+
+Retrieve details of a specific employee:
+SELECT employee_id, employee_type, first_name, middle_name, last_name, dob, start_date, email_address, contact_number
+FROM employee_table
+WHERE employee_id = 'your_employee_id';
+
+Retrieve Compensation Information:
+Retrieve compensation details for crew members:
+SELECT crew_id, hour, wages, role_description
+FROM crew_table
+WHERE employee_id = 'your_crew_employee_id';
+
+Obtain compensation details for staff members:
+SELECT staff_id, monthly_wage, working_hours, department
+FROM staff_table
+WHERE employee_id = 'your_staff_employee_id';
+
+Retrieve Film Information:
+
+Get a list of all films produced by a particular production company:
+
+SELECT * FROM movie_table WHERE company_id = 'your_company_id';
+
+Retrieve details of a specific film:
+
+SELECT movie_code, title, release_year, release_date, protagonist
+FROM movie_table
+WHERE movie_id = 'your_movie_id';
+
+Grant Information:
+
+Retrieve a list of grants received by production companies:
+
+SELECT * FROM grant_table WHERE company_id = 'your_company_id';
+
+Obtain details of a specific grant application:
+
+SELECT title, funding_organization, max_value, deadline, application_date, desire_amount
+FROM grant_table
+WHERE grant_id = 'your_grant_id';
+
+alisiddique686@gmail.com

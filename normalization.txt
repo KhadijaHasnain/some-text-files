@@ -1,0 +1,257 @@
+-- Address Table
+CREATE TABLE Address (
+    address_id INT PRIMARY KEY AUTO_INCREMENT,
+    zip_code VARCHAR(20) NOT NULL,
+    city VARCHAR(100) NOT NULL,
+    nation VARCHAR(100) NOT NULL
+);
+
+-- Company Information Table
+CREATE TABLE CompanyInfo (
+    company_id INT PRIMARY KEY AUTO_INCREMENT,
+    company_name VARCHAR(255) NOT NULL,
+    address_id INT,
+    organization_type VARCHAR(50) NOT NULL,
+    number_of_employees INT NOT NULL,
+    net_value DECIMAL(10, 2) NOT NULL,
+    FOREIGN KEY (address_id) REFERENCES Address(address_id)
+);
+
+-- Employee Information Table
+CREATE TABLE EmployeeInfo (
+    employee_id SERIAL PRIMARY KEY,
+    company_id INT,
+    employee_type VARCHAR(50),
+    first_name VARCHAR(255),
+    middle_name VARCHAR(255),
+    last_name VARCHAR(255),
+    dob DATE,
+    start_date DATE,
+    FOREIGN KEY (company_id) REFERENCES ProductionCompany(company_id)
+);
+
+-- Contact Information Table
+CREATE TABLE ContactInfo (
+    contact_id SERIAL PRIMARY KEY,
+    employee_id SERIAL,
+    email_address VARCHAR(255),
+    contact_number VARCHAR(15),
+    FOREIGN KEY (employee_id) REFERENCES EmployeeInfo(employee_id)
+);
+
+-- Grant Information Table
+CREATE TABLE GrantInfo (
+    grant_id SERIAL PRIMARY KEY,
+    company_id INT,
+    title VARCHAR(255),
+    funding_organization VARCHAR(255),
+    max_value INT,
+    deadline DATE,
+    application_date DATE,
+    desired_amount INT,
+    FOREIGN KEY (company_id) REFERENCES ProductionCompany(company_id)
+);
+
+-- Staff Information Table
+CREATE TABLE StaffInfo (
+    staff_id VARCHAR(255) PRIMARY KEY,
+    employee_id SERIAL,
+    department VARCHAR(255),
+    monthly_wage VARCHAR(255),
+    working_hours VARCHAR(255),
+    FOREIGN KEY (employee_id) REFERENCES employee_table(employee_id)
+);
+
+-- Staff Location Table
+CREATE TABLE StaffLocation (
+    staff_id VARCHAR(255),
+    building VARCHAR(255),
+    address VARCHAR(255),
+    PRIMARY KEY (staff_id),
+    FOREIGN KEY (staff_id) REFERENCES StaffInfo(staff_id)
+);
+
+-- Stakeholder Information Table
+CREATE TABLE StakeholderInfo (
+    stakeholder_id VARCHAR(255) PRIMARY KEY,
+    place_of_birth VARCHAR(255),
+    mother_name VARCHAR(255),
+    father_name VARCHAR(255),
+    phone_number VARCHAR(255),
+    insurance_number VARCHAR(255),
+    passport_number VARCHAR(255)
+);
+
+-- Movie Information Table
+CREATE TABLE MovieInfo (
+    movie_id VARCHAR(255) PRIMARY KEY,
+    company_id INT,
+    movie_code VARCHAR(255),
+    title VARCHAR(255),
+    release_year VARCHAR(255),
+    release_date VARCHAR(255),
+    protagonist VARCHAR(255),
+    FOREIGN KEY (company_id) REFERENCES ProductionCompany(company_id)
+);
+
+-- Movie Genre Table (Optional, if a movie can have multiple genres)
+CREATE TABLE MovieGenre (
+    movie_id VARCHAR(255),
+    genre VARCHAR(255),
+    PRIMARY KEY (movie_id, genre),
+    FOREIGN KEY (movie_id) REFERENCES MovieInfo(movie_id)
+);
+
+-- Crew Information Table
+CREATE TABLE CrewInfo (
+    crew_id VARCHAR(255) PRIMARY KEY,
+    hour INT,
+    wages INT,
+    movie_id VARCHAR(255),
+    employee_id VARCHAR(255),
+    role_description VARCHAR(255),
+    FOREIGN KEY (movie_id) REFERENCES movie_table(movie_id),
+    FOREIGN KEY (employee_id) REFERENCES employee_table(employee_id)
+);
+
+Retrieve Production Companies' Information:
+
+Get a list of all production companies in the European region.
+SELECT * FROM CompanyInfo
+JOIN Address ON CompanyInfo.address_id = Address.address_id
+WHERE Address.nation = 'European';
+
+Retrieve specific details for a given production company.
+SELECT CompanyInfo.company_id, company_name, zip_code, city, nation, organization_type, number_of_employees, net_value
+FROM CompanyInfo
+JOIN Address ON CompanyInfo.address_id = Address.address_id
+WHERE CompanyInfo.company_id = [YourCompanyID];
+
+Retrieve Shareholder Information:
+
+Obtain a list of shareholders for a particular production company.
+SELECT StakeholderInfo.*
+FROM CompanyStakeholder
+JOIN StakeholderInfo ON CompanyStakeholder.stakeholder_id = StakeholderInfo.stakeholder_id
+WHERE CompanyStakeholder.company_id = [YourCompanyID];
+
+Retrieve details of a specific shareholder.
+SELECT StakeholderInfo.*
+FROM StakeholderInfo
+WHERE stakeholder_id = [YourStakeholderID];
+
+Retrieve Employee Information:
+
+Get a list of all employees working for a specific production company.
+SELECT EmployeeInfo.*, ContactInfo.email_address, ContactInfo.contact_number
+FROM EmployeeInfo
+LEFT JOIN ContactInfo ON EmployeeInfo.employee_id = ContactInfo.employee_id
+WHERE EmployeeInfo.company_id = [YourCompanyID];
+
+Retrieve details of a specific employee.
+SELECT EmployeeInfo.*, ContactInfo.email_address, ContactInfo.contact_number, StaffInfo.department
+FROM EmployeeInfo
+LEFT JOIN ContactInfo ON EmployeeInfo.employee_id = ContactInfo.employee_id
+LEFT JOIN StaffInfo ON EmployeeInfo.employee_id = StaffInfo.employee_id
+WHERE EmployeeInfo.employee_id = [YourEmployeeID];
+
+Retrieve Compensation Information:
+
+Retrieve compensation details for crew members.
+SELECT CrewInfo.*, EmployeeInfo.first_name, EmployeeInfo.last_name
+FROM CrewInfo
+JOIN EmployeeInfo ON CrewInfo.employee_id = EmployeeInfo.employee_id;
+
+Obtain compensation details for staff members.
+SELECT StaffInfo.*, EmployeeInfo.first_name, EmployeeInfo.last_name
+FROM StaffInfo
+JOIN EmployeeInfo ON StaffInfo.employee_id = EmployeeInfo.employee_id;
+
+Retrieve Film Information:
+
+Get a list of all films produced by a particular production company.
+SELECT MovieInfo.*
+FROM MovieInfo
+WHERE MovieInfo.company_id = [YourCompanyID];
+
+Retrieve details of a specific film.
+SELECT MovieInfo.*, CrewInfo.role_description, EmployeeInfo.first_name, EmployeeInfo.last_name
+FROM MovieInfo
+LEFT JOIN CrewInfo ON MovieInfo.movie_id = CrewInfo.movie_id
+LEFT JOIN EmployeeInfo ON CrewInfo.employee_id = EmployeeInfo.employee_id
+WHERE MovieInfo.movie_id = [YourMovieID];
+
+Grant Information:
+
+Retrieve a list of grants received by production companies.
+SELECT GrantInfo.*
+FROM GrantInfo
+WHERE GrantInfo.company_id = [YourCompanyID];
+
+Obtain details of a specific grant application.
+SELECT GrantInfo.*
+FROM GrantInfo
+WHERE GrantInfo.grant_id = [YourGrantID];
+
+Insert Data:
+
+Insert data into the Address table:
+
+INSERT INTO Address (zip_code, city, nation) VALUES ('12345', 'Example City', 'Example Nation');
+
+Insert data into the CompanyInfo table:
+
+INSERT INTO CompanyInfo (company_name, address_id, organization_type, number_of_employees, net_value) VALUES ('Example Company', 1, 'Production', 100, 100000.00);
+
+Insert data into the EmployeeInfo table:
+
+INSERT INTO EmployeeInfo (company_id, employee_type, first_name, middle_name, last_name, dob, start_date) VALUES (1, 'Regular', 'John', 'M', 'Doe', '1990-01-01', '2022-01-01');
+
+Insert data into the ContactInfo table:
+
+INSERT INTO ContactInfo (employee_id, email_address, contact_number) VALUES (1, 'john.doe@example.com', '123-456-7890');
+
+Insert data into the GrantInfo table:
+
+INSERT INTO GrantInfo (company_id, title, funding_organization, max_value, deadline, application_date, desired_amount) VALUES (1, 'Research Grant', 'Example Foundation', 50000, '2022-12-31', '2022-01-15', 30000);
+
+Insert data into the StaffInfo table:
+
+INSERT INTO StaffInfo (staff_id, employee_id, department, monthly_wage, working_hours) VALUES ('S001', 1, 'HR', '5000', '40');
+
+Insert data into the StaffLocation table:
+
+INSERT INTO StaffLocation (staff_id, building, address) VALUES ('S001', 'Main Building', '123 Main Street');
+
+Insert data into the StakeholderInfo table:
+
+INSERT INTO StakeholderInfo (stakeholder_id, place_of_birth, mother_name, father_name, phone_number, insurance_number, passport_number) VALUES ('SH001', 'City A', 'Mary Doe', 'John Doe', '987-654-3210', 'ABC123', 'XYZ789');
+
+Insert data into the CompanyStakeholder table:
+
+INSERT INTO CompanyStakeholder (company_id, stakeholder_id) VALUES (1, 'SH001');
+
+Insert data into the MovieInfo table:
+
+INSERT INTO MovieInfo (movie_id, company_id, movie_code, title, release_year, release_date, protagonist) VALUES ('M001', 1, 'MC001', 'Example Movie', '2022', '2022-01-01', 'John Doe');
+
+Insert data into the MovieGenre table:
+
+INSERT INTO MovieGenre (movie_id, genre) VALUES ('M001', 'Action');
+
+INSERT INTO MovieGenre (movie_id, genre) VALUES ('M001', 'Drama');
+
+Insert data into the CrewInfo table:
+INSERT INTO CrewInfo (crew_id, hour, wages, movie_id, employee_id, role_description) VALUES ('C001', 40, 1000, 'M001', 'E001', 'Director');
+
+Update Data:
+
+Update data in the EmployeeInfo table:
+UPDATE EmployeeInfo SET start_date = '2022-02-01' WHERE employee_id = 1;
+
+Delete Data:
+
+Delete data from the EmployeeInfo table:
+
+DELETE FROM EmployeeInfo WHERE employee_id = 1;
+
